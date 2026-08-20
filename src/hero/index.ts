@@ -1,6 +1,18 @@
 import * as THREE from 'three'
-import { prefersReducedMotion, scrollScrubAllowed, ensureGsap } from '../lib/motion'
-import { cssToken, pickDprCap, pickPointBudget, shouldUsePoster } from '../lib/webgl'
+import {
+  prefersReducedMotion,
+  scrollScrubAllowed,
+  ensureGsap,
+  onScrubModeChange,
+} from '../lib/motion'
+import {
+  cssToken,
+  pickAntialias,
+  pickDprCap,
+  pickPointBudget,
+  pickPowerPreference,
+  shouldUsePoster,
+} from '../lib/webgl'
 import { buildLights, buildTabletopScene } from './scene'
 import { samplePoints } from './sampling'
 import { createMorphMaterial } from './morphMaterial'
@@ -38,21 +50,31 @@ export function initHero(): void {
   }
 
   const reduced = prefersReducedMotion()
-  const scrubMode = scrollScrubAllowed()
 
   // ---- three setup ----
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: true,
-    powerPreference: 'high-performance',
+    antialias: pickAntialias(),
+    powerPreference: pickPowerPreference(),
   })
   renderer.setClearColor(tokenColor('--color-paper'), 1)
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, pickDprCap()))
 
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 30)
-  camera.position.set(0.85, 1.3, 2.9)
   const lookTarget = new THREE.Vector3(0.14, 0.16, -0.05)
+
+  // The dolly runs between these two along the ray through the scene, scaled
+  // out by `framing` when the viewport is too tall and narrow to hold the desk.
+  const CAM_SCAN = new THREE.Vector3(0.85, 1.3, 2.9)
+  const CAM_SIM = new THREE.Vector3(0.85, 1.0, 2.35)
+  const dolly = { t: 0 }
+  let framing = 1
+
+  const applyCamera = (): void => {
+    camera.position.lerpVectors(CAM_SCAN, CAM_SIM, dolly.t).multiplyScalar(framing)
+  }
+  applyCamera()
 
   const parts = buildTabletopScene({
     mesh: tokenColor('--canvas-mesh'),
@@ -114,7 +136,22 @@ export function initHero(): void {
     const { clientWidth, clientHeight } = stage
     if (clientWidth === 0 || clientHeight === 0) return
     renderer.setSize(clientWidth, clientHeight, false)
-    camera.aspect = clientWidth / clientHeight
+    const aspect = clientWidth / clientHeight
+    camera.aspect = aspect
+
+    // A phone held upright has barely half the horizontal field of view of a
+    // laptop, so the 2.7m desk runs off both edges and the scan ends up
+    // directly behind the headline. Dolly back, then shift the frustum down so
+    // the scene sits above the text instead of inside it.
+    const portrait = THREE.MathUtils.clamp((1.3 - aspect) / 0.75, 0, 1)
+    framing = 1 + portrait * 0.45
+    if (portrait > 0.01) {
+      const lift = clientHeight * portrait * 0.15
+      camera.setViewOffset(clientWidth, clientHeight, 0, lift, clientWidth, clientHeight)
+    } else {
+      camera.clearViewOffset()
+    }
+    applyCamera()
     camera.updateProjectionMatrix()
     markDirty()
   }
@@ -132,6 +169,8 @@ export function initHero(): void {
   io.observe(stage)
 
   // ---- the morph timeline, scrubbed or slider-driven ----
+  let scrubMode = scrollScrubAllowed()
+
   const onProgress = (progress: number): void => {
     readoutFill.style.transform = `scaleX(${progress.toFixed(4)})`
     if (scrubMode) cue.classList.toggle('is-hidden', progress > 0.04)
@@ -140,7 +179,8 @@ export function initHero(): void {
 
   const tl = buildHeroTimeline({
     morph,
-    camera,
+    dolly,
+    applyCamera,
     meshMaterials: parts.meshMaterials,
     edgeMaterials: parts.edgeMaterials,
     meshObjects: [

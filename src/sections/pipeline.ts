@@ -1,10 +1,12 @@
-import { ensureGsap, scrollScrubAllowed } from '../lib/motion'
+import { ensureGsap, onScrubModeChange, scrollScrubAllowed } from '../lib/motion'
 
 /**
  * Hand-built SVG line art of one desk scene, drawn in three scrubbed acts:
  * scan points appear (capture), outlines and joints draw on (reconstruct),
  * then the sim viewport brackets and sensor marks land (simulate).
- * On narrow viewports or reduced motion the finished drawing is shown static.
+ * On viewports too small to pin, or under reduced motion, the finished drawing
+ * is shown static — a pinned column taller than the screen would strand the
+ * third stage below the fold with no way to scroll to it.
  */
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
@@ -117,53 +119,79 @@ export function initPipeline(): void {
   if (!section || !pin || !svg || stages.length === 0) return
 
   const built = buildScene(svg)
-
-  if (!scrollScrubAllowed()) {
-    // Finished drawing, everything legible, nothing pinned.
-    svg.classList.add('pipeline__svg--done')
-    return
-  }
-
   const gsap = ensureGsap()
-  section.classList.add('pipeline--live')
+
+  const animated = [
+    ...built.points,
+    ...built.outlines,
+    built.simMarks,
+    built.camera,
+    built.stackTop,
+    built.stackMid,
+    built.lid,
+  ]
 
   const setStage = (index: number): void => {
     stages.forEach((stage, i) => stage.classList.toggle('is-active', i === index))
   }
-  setStage(0)
 
-  gsap.set(built.points.map((p) => p), { opacity: 0 })
-  gsap.set(built.outlines, { strokeDashoffset: 1 })
-  gsap.set(built.simMarks, { opacity: 0 })
-  gsap.set(built.camera, { opacity: 0 })
+  let tl: gsap.core.Timeline | null = null
 
-  const tl = gsap.timeline({
-    defaults: { ease: 'none' },
-    scrollTrigger: {
-      trigger: pin,
-      start: 'top top',
-      end: '+=140%',
-      scrub: 0.5,
-      pin: true,
-      anticipatePin: 1,
-      invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        setStage(self.progress < 0.33 ? 0 : self.progress < 0.7 ? 1 : 2)
+  const mountScrub = (): void => {
+    svg.classList.remove('pipeline__svg--done')
+    section.classList.add('pipeline--live')
+    setStage(0)
+
+    gsap.set(built.points, { opacity: 0 })
+    gsap.set(built.outlines, { strokeDashoffset: 1 })
+    gsap.set(built.simMarks, { opacity: 0 })
+    gsap.set(built.camera, { opacity: 0 })
+
+    tl = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: {
+        trigger: pin,
+        start: 'top top',
+        end: '+=140%',
+        scrub: 0.5,
+        pin: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          setStage(self.progress < 0.33 ? 0 : self.progress < 0.7 ? 1 : 2)
+        },
       },
-    },
-  })
+    })
 
-  tl.to(built.camera, { opacity: 1, duration: 0.06 }, 0)
-    .to(built.points, { opacity: 0.9, duration: 0.2, stagger: 0.0012 }, 0.04)
-    .to(built.outlines, { strokeDashoffset: 0, duration: 0.3, stagger: 0.02 }, 0.34)
-    .to(built.points, { opacity: 0.18, duration: 0.2 }, 0.42)
-    .to(built.stackTop, { x: -7, duration: 0.08 }, 0.52)
-    .to(built.stackMid, { x: 5, duration: 0.08 }, 0.52)
-    .to(built.lid, { rotation: 18, svgOrigin: '266 290', duration: 0.1 }, 0.56)
-    .to(built.camera, { opacity: 0.25, duration: 0.1 }, 0.7)
-    .to(built.simMarks, { opacity: 1, duration: 0.16 }, 0.72)
+    tl.to(built.camera, { opacity: 1, duration: 0.06 }, 0)
+      .to(built.points, { opacity: 0.9, duration: 0.2, stagger: 0.0012 }, 0.04)
+      .to(built.outlines, { strokeDashoffset: 0, duration: 0.3, stagger: 0.02 }, 0.34)
+      .to(built.points, { opacity: 0.18, duration: 0.2 }, 0.42)
+      .to(built.stackTop, { x: -7, duration: 0.08 }, 0.52)
+      .to(built.stackMid, { x: 5, duration: 0.08 }, 0.52)
+      .to(built.lid, { rotation: 18, svgOrigin: '266 290', duration: 0.1 }, 0.56)
+      .to(built.camera, { opacity: 0.25, duration: 0.1 }, 0.7)
+      .to(built.simMarks, { opacity: 1, duration: 0.16 }, 0.72)
 
-  document.fonts?.ready.then(() => {
-    tl.scrollTrigger?.refresh()
+    void document.fonts?.ready.then(() => tl?.scrollTrigger?.refresh())
+  }
+
+  const unmountScrub = (): void => {
+    // kill(true) reverts the pin so the section stops reserving scroll distance
+    tl?.scrollTrigger?.kill(true)
+    tl?.kill()
+    tl = null
+    section.classList.remove('pipeline--live')
+    stages.forEach((stage) => stage.classList.remove('is-active'))
+    gsap.set(animated, { clearProps: 'all' })
+    svg.classList.add('pipeline__svg--done')
+  }
+
+  if (scrollScrubAllowed()) mountScrub()
+  else unmountScrub()
+
+  onScrubModeChange((allowed) => {
+    if (allowed) mountScrub()
+    else unmountScrub()
   })
 }

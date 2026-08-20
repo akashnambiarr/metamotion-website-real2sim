@@ -3,7 +3,9 @@ import { ensureGsap, ScrollTrigger } from '../lib/motion'
 
 export interface HeroTimelineParts {
   morph: THREE.ShaderMaterial
-  camera: THREE.PerspectiveCamera
+  /** Normalized dolly position; the caller turns it into a camera transform. */
+  dolly: { t: number }
+  applyCamera: () => void
   meshMaterials: THREE.MeshStandardMaterial[]
   edgeMaterials: THREE.LineBasicMaterial[]
   meshObjects: THREE.Object3D[]
@@ -13,7 +15,8 @@ export interface HeroTimelineParts {
 /**
  * One timeline is the single source of truth for the morph, the camera dolly,
  * and the mesh/edge fade. Scroll mode scrubs it; slider mode sets progress on
- * the same object, so both paths exercise identical code.
+ * the same object, so both paths exercise identical code. The dolly is a
+ * normalized 0-1 so a resize can re-frame the shot without fighting the tween.
  */
 export function buildHeroTimeline(parts: HeroTimelineParts): gsap.core.Timeline {
   const gsap = ensureGsap()
@@ -33,7 +36,7 @@ export function buildHeroTimeline(parts: HeroTimelineParts): gsap.core.Timeline 
   })
 
   tl.to(parts.morph.uniforms.uProgress as { value: number }, { value: 1, duration: 1 }, 0)
-    .to(parts.camera.position, { z: 2.35, y: 1.0, duration: 1 }, 0)
+    .to(parts.dolly, { t: 1, duration: 1, onUpdate: parts.applyCamera }, 0)
     .to(fade, { mesh: 1, duration: 0.5, onUpdate: applyFade }, 0.4)
     .to(fade, { edge: 1, duration: 0.45, onUpdate: applyFade }, 0.34)
 

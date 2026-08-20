@@ -19,12 +19,13 @@
 
 .nav-pill {
   position: fixed;
-  inset: var(--space-md) auto auto 50%;
+  inset: calc(var(--space-md) + var(--safe-t)) auto auto 50%;
   transform: translateX(-50%);
+  max-width: calc(100vw - 2 * var(--space-xs) - var(--safe-l) - var(--safe-r));
   display: inline-flex;
   align-items: center;
-  gap: var(--space-md);
-  padding: 0.5rem 0.75rem 0.5rem 1rem;
+  gap: var(--space-sm);
+  padding: 0.375rem 0.5rem 0.375rem 0.75rem;
   line-height: 1;
   background: color-mix(in oklch, var(--color-paper) 72%, transparent);
   backdrop-filter: blur(14px) saturate(120%);
@@ -39,19 +40,49 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs);
+  /* padding, not height, so the pill stays pill-sized while the tap target grows */
+  padding-block: 0.5rem;
+  min-height: 2.5rem;
   text-decoration: none;
 }
 
 .nav-pill__mark {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .nav-pill__wordmark {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: var(--text-md);
+  font-size: var(--text-base);
   letter-spacing: -0.02em;
+}
+
+/* two classes so it outranks .btn, which is declared further down the file */
+.nav-pill .nav-pill__cta {
+  min-height: 2.5rem;
+  padding-inline: 0.9rem;
+}
+
+@media (min-width: 26rem) {
+  .nav-pill {
+    padding: 0.5rem 0.75rem 0.5rem 1rem;
+    gap: var(--space-md);
+  }
+
+  .nav-pill__mark {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .nav-pill__wordmark {
+    font-size: var(--text-md);
+  }
+
+  .nav-pill .nav-pill__cta {
+    min-height: 2.75rem;
+    padding-inline: 1.25rem;
+  }
 }
 
 .nav-pill__links {
@@ -81,6 +112,16 @@
 
   .nav-pill__links {
     display: flex;
+  }
+}
+
+/* a heavy blur over the WebGL hero costs real frames while a phone scrolls,
+   so touch devices get a lighter one over a more opaque plate */
+@media (pointer: coarse) {
+  .nav-pill {
+    background: color-mix(in oklch, var(--color-paper) 90%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 }
 
@@ -244,6 +285,8 @@ input[type='range'] {
   height: 2.75rem;
   background: transparent;
   cursor: grab;
+  /* a horizontal drag adjusts the value; a vertical one still scrolls the page */
+  touch-action: pan-y;
 }
 
 input[type='range']:active {
@@ -298,6 +341,29 @@ input[type='range']:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 4px;
   border-radius: var(--radius-sm);
+}
+
+/* a 17px thumb is fine under a cursor and fiddly under a thumb */
+@media (pointer: coarse) {
+  /* one rule per vendor pseudo-element: a grouped selector is dropped whole */
+  input[type='range']::-webkit-slider-runnable-track {
+    height: 3px;
+  }
+
+  input[type='range']::-moz-range-track {
+    height: 3px;
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: calc(-0.75rem + 1.5px);
+  }
+
+  input[type='range']::-moz-range-thumb {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
 }
 
 /* ---------- structural rules ---------- */

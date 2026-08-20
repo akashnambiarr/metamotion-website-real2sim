@@ -55,7 +55,12 @@
   --text-2xl: 2.4414rem;
   --text-3xl: 3.0518rem;
   --text-display-s: clamp(2.1rem, 3.5vw + 0.9rem, 3.6rem);
-  --text-display: clamp(2.75rem, 5vw + 1rem, 5.25rem);
+  --text-display: clamp(2.25rem, 5vw + 1rem, 5.25rem);
+
+  /* fluid pairs: the fixed step is the desktop end, the floor keeps phones sane */
+  --text-h2: clamp(1.9531rem, 1.8vw + 1.4rem, 2.4414rem);
+  --text-lead: clamp(1.25rem, 1.4vw + 0.98rem, 1.5625rem);
+  --text-figure: clamp(2.4414rem, 3vw + 1.4rem, 3.0518rem);
 
   /* ---- space · 4pt scale, named by role ---- */
   --space-3xs: 0.125rem;
@@ -65,11 +70,21 @@
   --space-md: 1rem;
   --space-lg: 1.5rem;
   --space-xl: 2.5rem;
-  --space-2xl: 4rem;
-  --space-3xl: 6rem;
-  --space-4xl: 9rem;
+  /* the three big steps are fluid so a phone isn't mostly section padding */
+  --space-2xl: clamp(2.5rem, 6vw, 4rem);
+  --space-3xl: clamp(3.5rem, 8vw, 6rem);
+  --space-4xl: clamp(4.5rem, 11vw, 9rem);
   --page-gutter: clamp(1.25rem, 4vw, 3.5rem);
   --measure: 62ch;
+
+  /* notch/home-bar insets; 0px on everything that isn't an iPhone in landscape */
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+
+  /* clearance for the fixed nav pill, used by scroll-padding and short heroes */
+  --nav-clear: calc(5.5rem + var(--safe-t));
 
   /* ---- motion ---- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);

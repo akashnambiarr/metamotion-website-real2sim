@@ -30,7 +30,7 @@
   position: relative;
   z-index: var(--z-raised);
   width: 100%;
-  padding-block-end: var(--space-xl);
+  padding-block-end: calc(var(--space-xl) + var(--safe-b));
   display: grid;
   gap: var(--space-lg);
   justify-items: start;
@@ -40,6 +40,19 @@
   font-size: var(--text-display);
   font-weight: 750;
   max-width: 12ch;
+}
+
+/* landscape phones have ~340px of height: shrink the statement to fit it */
+@media (max-height: 34rem) and (orientation: landscape) {
+  .marquee__fold {
+    gap: var(--space-sm);
+    padding-block-end: calc(var(--space-md) + var(--safe-b));
+  }
+
+  .marquee__title {
+    font-size: var(--text-xl);
+    max-width: 24ch;
+  }
 }
 
 .marquee__readout {
@@ -71,7 +84,7 @@
 .marquee__slider {
   display: grid;
   gap: var(--space-2xs);
-  width: min(20rem, 70vw);
+  width: min(20rem, 100%);
 }
 
 .marquee__slider label {
@@ -101,6 +114,19 @@
     transparent 38%
   );
   pointer-events: none;
+}
+
+/* a portrait statement wraps to three or four lines and reaches much further
+   up the canvas than a desktop one, so the scrim has to travel with it */
+@media (max-aspect-ratio: 1 / 1) {
+  .marquee__stage::after {
+    background: linear-gradient(
+      to top,
+      color-mix(in oklch, var(--color-paper) 94%, transparent) 0%,
+      color-mix(in oklch, var(--color-paper) 62%, transparent) 32%,
+      transparent 60%
+    );
+  }
 }
 
 /* page-load orchestration: the one entrance */
@@ -149,7 +175,7 @@
 }
 
 .lead__text {
-  font-size: var(--text-lg);
+  font-size: var(--text-lead);
   line-height: 1.45;
   max-width: 45ch;
   text-wrap: pretty;
@@ -164,7 +190,7 @@
 }
 
 .bottleneck h2 {
-  font-size: var(--text-2xl);
+  font-size: var(--text-h2);
   max-width: 16ch;
 }
 
@@ -212,7 +238,7 @@
 }
 
 .stat__figure {
-  font-size: var(--text-3xl);
+  font-size: var(--text-figure);
   font-weight: 500;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -240,7 +266,7 @@
 }
 
 .pipeline h2 {
-  font-size: var(--text-2xl);
+  font-size: var(--text-h2);
   max-width: 18ch;
   margin-block-end: var(--space-xl);
 }
@@ -398,7 +424,7 @@
 }
 
 .usecase__body h2 {
-  font-size: var(--text-2xl);
+  font-size: var(--text-h2);
   max-width: 17ch;
   margin-block-end: var(--space-xs);
 }
@@ -437,7 +463,13 @@
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-lg);
   align-items: end;
-  margin-block-start: var(--space-xl);
+  margin-block-start: var(--space-md);
+}
+
+@media (min-width: 56rem) {
+  .perturb {
+    margin-block-start: var(--space-xl);
+  }
 }
 
 @media (min-width: 56rem) {
@@ -534,24 +566,32 @@
   gap: var(--space-lg);
 }
 
+/* label and value share a row, the slider takes the full width underneath —
+   on a phone a value parked in a right-hand column reads as unrelated */
 .perturb__control {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 3ch;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--space-2xs) var(--space-sm);
-  align-items: center;
+  align-items: baseline;
 }
 
 .perturb__control label {
-  grid-column: 1 / -1;
+  grid-column: 1;
   font-size: var(--text-sm);
   color: var(--color-ink-2);
 }
 
 .perturb__control output {
+  grid-column: 2;
+  min-width: 3ch;
   font-size: var(--text-xs);
   color: var(--color-muted);
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.perturb__control input[type='range'] {
+  grid-column: 1 / -1;
 }
 
 .perturb__controls {
@@ -592,7 +632,7 @@
 }
 
 .interest__intro h2 {
-  font-size: var(--text-2xl);
+  font-size: var(--text-h2);
 }
 
 .interest__intro p {
@@ -635,7 +675,7 @@
 /* ---------- footer · Ft5 statement ---------- */
 
 .foot-stmt {
-  padding-block: var(--space-3xl) var(--space-lg);
+  padding-block: var(--space-3xl) calc(var(--space-lg) + var(--safe-b));
 }
 
 .foot-stmt__line {
@@ -652,9 +692,10 @@
 
 .foot-stmt__meta {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-xs) var(--space-md);
   padding-block-start: var(--space-md);
   border-block-start: var(--rule-hair) solid var(--color-rule);
 }
