@@ -36,6 +36,14 @@ export function pickDprCap(): number {
   return isCoarsePointer() ? DPR_CAP_MOBILE : DPR_CAP_DESKTOP
 }
 
+export function pickAntialias(): boolean {
+  return !isCoarsePointer()
+}
+
+export function pickPowerPreference(): WebGLPowerPreference {
+  return isCoarsePointer() ? 'low-power' : 'high-performance'
+}
+
 /** Read a CSS custom property (color tokens) so canvas colors never drift from CSS. */
 export function cssToken(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim()

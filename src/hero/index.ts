@@ -3,7 +3,6 @@ import {
   prefersReducedMotion,
   scrollScrubAllowed,
   ensureGsap,
-  onScrubModeChange,
 } from '../lib/motion'
 import {
   cssToken,
