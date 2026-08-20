@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MetMotion · Point a camera. Get a simulator.</title>
+    <meta
+      name="description"
+      content="MetMotion rebuilds real scenes as high-fidelity simulation environments for robot reinforcement learning and evaluation."
+    />
+    <meta name="theme-color" content="#09070d" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:title" content="MetMotion · Point a camera. Get a simulator." />
+    <meta
+      property="og:description"
+      content="Real scenes, rebuilt as simulation environments for robot RL and evaluation."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/og.jpg" />
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#lead">Skip to content</a>
+
+    <nav class="nav-pill" aria-label="Primary">
+      <a class="nav-pill__brand" href="#top" aria-label="MetMotion home">
+        <svg class="nav-pill__mark" viewBox="0 0 640 640" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="mm-nav" x1="0.14" y1="0.02" x2="0.88" y2="0.98">
+              <stop offset="0" stop-color="#9a2ff2" />
+              <stop offset="1" stop-color="#5b75fe" />
+            </linearGradient>
+          </defs>
+          <circle cx="320" cy="320" r="320" fill="url(#mm-nav)" />
+          <path d="M 100 308 Q 320 192 532 304" fill="none" stroke="#fff" stroke-opacity="0.32" stroke-width="22" stroke-linecap="round" />
+          <path d="M 96 386 Q 318 294 510 350" fill="none" stroke="#fff" stroke-opacity="0.28" stroke-width="22" stroke-linecap="round" />
+          <path d="M 124 433 L 236 176 L 320 327 L 404 176 L 518 433" fill="none" stroke="#fff" stroke-width="42" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span class="nav-pill__wordmark">MetMotion</span>
+      </a>
+      <ul class="nav-pill__links">
+        <li><a href="#pipeline">Pipeline</a></li>
+        <li><a href="#rl">RL at scale</a></li>
+        <li><a href="#evals">Evals</a></li>
+      </ul>
+      <a class="btn btn--fill nav-pill__cta" href="#access">Get early access</a>
+    </nav>
+
+    <main id="top">
+      <!-- Marquee hero: the WebGL morph is the page above the fold -->
+      <section class="marquee" id="hero" aria-label="MetMotion">
+        <div class="marquee__stage" aria-hidden="true">
+          <canvas class="marquee__canvas" id="hero-canvas"></canvas>
+        </div>
+        <div class="marquee__fold wrap">
+          <h1 class="marquee__title">Point a&nbsp;camera. Get a&nbsp;simulator.</h1>
+          <p class="marquee__readout mono" id="hero-readout" aria-hidden="true">
+            <span class="marquee__readout-label">real scan</span>
+            <span class="marquee__readout-track"><span class="marquee__readout-fill" id="hero-readout-fill"></span></span>
+            <span class="marquee__readout-label">simulation</span>
+          </p>
+          <div class="marquee__slider" id="hero-slider-wrap" hidden>
+            <label for="hero-slider">Rebuild the scene</label>
+            <input type="range" id="hero-slider" min="0" max="100" value="0" step="1" />
+          </div>
+          <p class="marquee__cue" id="hero-cue">Scroll to rebuild the scene</p>
+        </div>
+      </section>
+
+      <div class="rule-thick" role="presentation"></div>
+
+      <!-- Below the fold, the page becomes prose + instruments -->
+      <section class="lead wrap" id="lead">
+        <p class="lead__text">
+          MetMotion rebuilds real scenes as simulation environments robots can train in.
+          Articulated joints, contact physics, sensors you control. Built from photographs
+          of the room where your robot will actually work.
+        </p>
+      </section>
+
+      <section class="bottleneck wrap" id="bottleneck">
+        <h2>The robot is the bottleneck.</h2>
+        <p>
+          Foundation models for robots are gated by real-world interaction. Collecting data
+          is slow. Evaluating on hardware is slower, and it never replays the same way twice.
+          Numbers from our own bench, on a tight-tolerance insertion task.
+        </p>
+        <dl class="stat-row">
+          <div class="stat stat--wide">
+            <dt>Collecting 500 episodes</dt>
+            <dd><span class="stat__figure mono" data-count="3" data-prefix="2-">2-3</span> <span class="stat__unit">days</span></dd>
+          </div>
+          <div class="stat">
+            <dt>Evaluating one checkpoint, 50 rollouts at a minute each plus a minute to reset</dt>
+            <dd><span class="stat__figure mono" data-count="2">2</span> <span class="stat__unit">hours</span></dd>
+          </div>
+          <div class="stat">
+            <dt>Robot time per training run, at 5-10 checkpoints</dt>
+            <dd><span class="stat__figure mono" data-count="20" data-prefix="10-">10-20</span> <span class="stat__unit">hours</span></dd>
+          </div>
+          <div class="stat stat--accent">
+            <dt>Identical resets. A real scene never reproduces exactly</dt>
+            <dd><span class="stat__figure mono" data-count="0">0</span></dd>
+          </div>
+        </dl>
+        <p class="bottleneck__coda">
+          All of that buys you one lighting condition, one camera pose, one table. The
+          variation that breaks policies in the field never gets tested, because nobody
+          has the arm time.
+        </p>
+      </section>
+
+      <!-- Pinned pipeline: genuinely ordinal, numbered stages -->
+      <section class="pipeline" id="pipeline">
+        <div class="wrap">
+          <h2>How a scene becomes a simulator</h2>
+        </div>
+        <div class="pipeline__pin" id="pipeline-pin">
+          <div class="wrap pipeline__grid">
+            <ol class="pipeline__stages">
+              <li class="pipeline__stage" data-stage="0">
+                <span class="pipeline__num">01</span>
+                <h3>Capture</h3>
+                <p>
+                  Photograph the scene from a handful of angles. A phone camera is enough
+                  to start; a depth camera makes it better.
+                </p>
+              </li>
+              <li class="pipeline__stage" data-stage="1">
+                <span class="pipeline__num">02</span>
+                <h3>Reconstruct</h3>
+                <p>
+                  Geometry splits into objects, not one fused mesh, so a stack of cups
+                  becomes four cups you can knock over. Joints are fitted and tested until
+                  the laptop lid swings and the drawer slides. Every object gets mass,
+                  friction, and restitution.
+                </p>
+              </li>
+              <li class="pipeline__stage" data-stage="2">
+                <span class="pipeline__num">03</span>
+                <h3>Simulate</h3>
+                <p>
+                  The scene loads into your simulator with sensors you control. Move a
+                  camera two centimeters. Kill a light. Inject noise. Run it a thousand
+                  times before lunch.
+                </p>
+              </li>
+            </ol>
+            <figure class="pipeline__viz" aria-hidden="true">
+              <svg class="pipeline__svg" id="pipeline-svg" viewBox="0 0 420 340"></svg>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="usecase wrap" id="rl">
+        <div class="usecase__body">
+          <h2>RL environments, at&nbsp;scale</h2>
+          <p>
+            Reinforcement learning took language models from GPT-3 to the models you use
+            every day. Robotics hasn't had that run. A policy can't collect millions of
+            rollouts on a physical arm; the arm breaks first, then the budget.
+          </p>
+          <p>
+            Simulation lifts the constraint only if the environment matches the scene the
+            robot will deploy into. That's what we build. Environments reconstructed from
+            your own scenes, articulated and physical, ready to run in parallel across a
+            cluster. The same environments produce synthetic data and reward signal for
+            fine-tuning.
+          </p>
+        </div>
+        <aside class="usecase__note">
+          <p class="usecase__note-line">rollouts limited by compute, not by arms</p>
+        </aside>
+      </section>
+
+      <section class="usecase usecase--flip wrap" id="evals">
+        <div class="usecase__body">
+          <h2>Evals that survive contact with&nbsp;reality</h2>
+          <p>
+            An eval is useful when the sim number predicts the bench number. We rebuild
+            your deployment scene at high fidelity, run the same policy in both, and
+            measure the gap instead of guessing at it.
+          </p>
+          <p>
+            Then comes the part a real bench can't do. Policies fail on variation you
+            didn't test. One we watched shrugged off Gaussian sensor noise, then collapsed
+            when a camera moved by a manufacturing tolerance. In sim, those knobs are
+            yours to turn.
+          </p>
+        </div>
+        <div class="perturb" id="perturb">
+          <figure class="perturb__figure">
+            <div class="perturb__scene" id="perturb-scene">
+              <img
+                src="/perturb-base.webp"
+                alt="Rendered simulation scene of a desk with objects, used to preview sensor perturbations"
+                width="1120"
+                height="700"
+                loading="lazy"
+                id="perturb-img"
+              />
+              <div class="perturb__grain" id="perturb-grain" aria-hidden="true"></div>
+            </div>
+            <figcaption class="perturb__caption">
+              Rendered from our procedural demo scene. Drag the knobs a policy gets
+              tested against.
+            </figcaption>
+          </figure>
+          <div class="perturb__controls">
+            <div class="perturb__control">
+              <label for="perturb-light">Lighting</label>
+              <input type="range" id="perturb-light" min="-100" max="100" value="0" step="1" />
+              <output for="perturb-light" id="perturb-light-out">0</output>
+            </div>
+            <div class="perturb__control">
+              <label for="perturb-noise">Sensor noise</label>
+              <input type="range" id="perturb-noise" min="0" max="100" value="0" step="1" />
+              <output for="perturb-noise" id="perturb-noise-out">0</output>
+            </div>
+            <div class="perturb__control">
+              <label for="perturb-jitter">Camera jitter</label>
+              <input type="range" id="perturb-jitter" min="0" max="100" value="0" step="1" />
+              <output for="perturb-jitter" id="perturb-jitter-out">0</output>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="interest" id="access">
+        <div class="wrap interest__grid">
+          <div class="interest__intro">
+            <h2>Get early access</h2>
+            <p>
+              We're building MetMotion with a small group of robotics teams. If your
+              policies need somewhere to practice, or your evals are eating arm time,
+              tell us what you're working on.
+            </p>
+          </div>
+          <form class="interest__form" id="interest-form" novalidate>
+            <div class="field">
+              <label for="f-name">Name</label>
+              <input id="f-name" name="name" type="text" autocomplete="name" required />
+            </div>
+            <div class="field">
+              <label for="f-email">Work email</label>
+              <input id="f-email" name="email" type="email" autocomplete="email" required />
+              <p class="field__error" id="f-email-error" aria-live="polite"></p>
+            </div>
+            <div class="field">
+              <label for="f-company">Company</label>
+              <input id="f-company" name="company" type="text" autocomplete="organization" />
+            </div>
+            <div class="field">
+              <label for="f-notes">What are you working on?</label>
+              <textarea id="f-notes" name="notes" rows="4"></textarea>
+            </div>
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="field__trap" aria-hidden="true" />
+            <button class="btn btn--fill interest__submit" type="submit" id="interest-submit">
+              Request early access
+            </button>
+            <p class="interest__status" id="interest-status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot-stmt">
+      <div class="wrap">
+        <p class="foot-stmt__line">Robots should practice in the rooms they'll work&nbsp;in.</p>
+        <div class="foot-stmt__meta">
+          <span class="foot-stmt__brand">
+            <svg class="foot-stmt__mark" viewBox="0 0 640 640" aria-hidden="true" focusable="false">
+              <defs>
+                <linearGradient id="mm-foot" x1="0.14" y1="0.02" x2="0.88" y2="0.98">
+                  <stop offset="0" stop-color="#9a2ff2" />
+                  <stop offset="1" stop-color="#5b75fe" />
+                </linearGradient>
+              </defs>
+              <circle cx="320" cy="320" r="320" fill="url(#mm-foot)" />
+              <path d="M 100 308 Q 320 192 532 304" fill="none" stroke="#fff" stroke-opacity="0.32" stroke-width="22" stroke-linecap="round" />
+              <path d="M 96 386 Q 318 294 510 350" fill="none" stroke="#fff" stroke-opacity="0.28" stroke-width="22" stroke-linecap="round" />
+              <path d="M 124 433 L 236 176 L 320 327 L 404 176 L 518 433" fill="none" stroke="#fff" stroke-width="42" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            MetMotion
+          </span>
+          <span class="foot-stmt__legal">© 2026 MetMotion</span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
