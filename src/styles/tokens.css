@@ -6,13 +6,13 @@
  * enrichment: hand-built procedural WebGL (interactive scroll-scrubbed morph) · studied: no · context: user-provided
  * contrast: pass (40-41) · slop: pass (42-45) · honest: pass (46) · chrome: pass (47) · tokens: pass (48)
  * responsive: pass (49) · icons: pass (30) · mobile: pass (34, 49, 50-57)
- * note: the purple-to-blue gradient + #fff strokes exist ONLY inside the reproduced MetMotion logo artwork
+ * note: the purple-to-blue gradient + #fff strokes exist ONLY inside the reproduced MetaMotion logo artwork
  * (user-supplied brand mark); no UI surface uses a gradient or a pure extreme.
  * Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V4
  */
 
 :root {
-  /* ---- color · dark paper, violet anchor (hue 300 from the MetMotion mark) ---- */
+  /* ---- color · dark paper, violet anchor (hue 300 from the MetaMotion mark) ---- */
   --color-paper: oklch(13.5% 0.014 300);
   --color-paper-2: oklch(17% 0.016 300);
   --color-paper-3: oklch(21% 0.018 300);
